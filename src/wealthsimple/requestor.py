@@ -1,3 +1,6 @@
+import json
+
+
 class APIRequestor:
     """
     A class to simplify request calls to REST API
@@ -53,6 +56,7 @@ class APIRequestor:
         if method == "POST":
             return self.post(URL, params)
         elif method == "GET":
+            print(URL)
             return self.get(URL, params)
         else:
             raise Exception(f"Invalid request method: {method}")

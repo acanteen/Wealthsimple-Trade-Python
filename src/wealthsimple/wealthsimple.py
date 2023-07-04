@@ -32,7 +32,7 @@ class WSTrade:
     get_activities()
         Get Wealthsimple Trade activities
     get_orders(symbol=None)
-        Get Wealthsimple Trade orders 
+        Get Wealthsimple Trade orders
     get_security(symbol)
         Get information about a security
     get_positions(id)
@@ -340,3 +340,18 @@ class WSTrade:
         """
         response = self.TradeAPI.makeRequest("GET", "forex")
         return response.json()
+
+    def get_activitiesAllActivities(self, bookmark=None, limit=None) -> list:
+        """Get Wealthsimple Trade activities
+
+        Returns
+        -------
+        list
+            A list of dictionaries containing Wealthsimple Trade activities
+        """
+        mainList = []
+        response = self.TradeAPI.makeRequest(
+            "GET", f"account/activities?limit={limit}&bookmark={bookmark}")
+        response = response.json()
+        mainList.append(response)
+        return response
