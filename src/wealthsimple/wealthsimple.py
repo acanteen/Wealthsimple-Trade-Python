@@ -341,7 +341,7 @@ class WSTrade:
         response = self.TradeAPI.makeRequest("GET", "forex")
         return response.json()
 
-    def get_activitiesAllActivities(self, bookmark=None, limit=None) -> list:
+    def get_activitiesAllActivities(self, bookmark=None, limit=None, filters = None) -> list:
         """Get Wealthsimple Trade activities
 
         Returns
@@ -351,7 +351,8 @@ class WSTrade:
         """
         mainList = []
         response = self.TradeAPI.makeRequest(
-            "GET", f"account/activities?limit={limit}&bookmark={bookmark}")
+            "GET", f"account/activities?limit={limit}{filters}&bookmark={bookmark}")
+        # https://trade-service.wealthsimple.com/account/activities?account_ids=&limit=20&type=buy&type=sell&type=dividend
         response = response.json()
         mainList.append(response)
         return response
