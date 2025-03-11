@@ -34,7 +34,7 @@ class APIRequestor:
         self.session = session
         self.APIMainURL = APIMainURL
 
-    def makeRequest(self, method, endpoint, params=None, returnValue=None):
+    def makeRequest(self, method,  endpoint, useGraph=None, params=None, jsonData=None, returnValue=None):
         """Make a request to a given API endpoint
 
         Parameters
@@ -51,17 +51,21 @@ class APIRequestor:
         Response : Response
             A requests response object
         """
-        URL = self.APIMainURL + endpoint
-
+        if(useGraph):
+            URL="https://my.wealthsimple.com/graphql"
+        else:
+            URL = self.APIMainURL + endpoint
+        
+        print("++++++++++++++++++++++++++++++++++++++++++++",URL)
         if method == "POST":
-            return self.post(URL, params)
+            return self.post(URL, params=params,jsonData=jsonData)
         elif method == "GET":
-            print(URL)
+            # print(URL)
             return self.get(URL, params)
         else:
             raise Exception(f"Invalid request method: {method}")
 
-    def post(self, URL, params=None):
+    def post(self, URL, params=None,jsonData=None):
         """Make a POST request to a given API endpoint
 
         Parameters
@@ -76,9 +80,9 @@ class APIRequestor:
         Response : Response
             A requests response object
         """
-
+        print(jsonData)
         try:
-            return self.session.post(URL, params)
+            return self.session.post(URL, params,jsonData)
         except Exception as err:
             print(err)
 

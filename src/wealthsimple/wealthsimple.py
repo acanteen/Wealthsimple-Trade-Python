@@ -2,7 +2,7 @@ from .requestor import APIRequestor
 import cloudscraper
 import os
 import json
-
+from datetime import date
 
 class WSTrade:
     """
@@ -49,7 +49,7 @@ class WSTrade:
         Get foreign exchange rate
     """
 
-    def __init__(self, email: str, password: str, two_factor_callback: callable = None):
+    def __init__(self, email: str, password: str, two_factor_callback: callable = None ):
         """
         Parameters
         ----------
@@ -94,7 +94,7 @@ class WSTrade:
                 ("password", password),
             ]
 
-            response = self.TradeAPI.makeRequest("POST", "auth/login", data)
+            response = self.TradeAPI.makeRequest("POST", "auth/login", params=data)
 
             # Check if account requires 2FA
             if "x-wealthsimple-otp" in response.headers:
@@ -109,7 +109,7 @@ class WSTrade:
                     data.append(("otp", MFACode))
                     # Make a second login request using the 2FA code
                     response = self.TradeAPI.makeRequest(
-                        "POST", "auth/login", data)
+                        "POST", "auth/login", params=data)
 
             if response.status_code == 401:
                 raise Exception("Invalid Login")
@@ -356,3 +356,29 @@ class WSTrade:
         response = response.json()
         mainList.append(response)
         return response
+
+    def getGraphQl(self) -> dict:
+        accountIds = self.get_account_ids()
+        today = str(date.today())
+
+        payload = json.dumps({
+        "operationName": "FetchActivityFeedItems",
+        "variables": {
+            "orderBy": "OCCURRED_AT_DESC",
+            "condition": {
+            "accountIds": accountIds,
+            "endDate": today
+            },
+            "first": 10000        },
+        "query": "query FetchActivityFeedItems($first: Int, $cursor: Cursor, $condition: ActivityCondition, $orderBy: [ActivitiesOrderBy!] = OCCURRED_AT_DESC) {\n  activityFeedItems(\n    first: $first\n    after: $cursor\n    condition: $condition\n    orderBy: $orderBy\n  ) {\n    edges {\n      node {\n        ...Activity\n        __typename\n      }\n      __typename\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment Activity on ActivityFeedItem {\n  accountId\n  aftOriginatorName\n  aftTransactionCategory\n  aftTransactionType\n  amount\n  amountSign\n  assetQuantity\n  assetSymbol\n  canonicalId\n  currency\n  eTransferEmail\n  eTransferName\n  externalCanonicalId\n  identityId\n  institutionName\n  occurredAt\n  p2pHandle\n  p2pMessage\n  spendMerchant\n  securityId\n  billPayCompanyName\n  billPayPayeeNickname\n  redactedExternalAccountNumber\n  opposingAccountId\n  status\n  subType\n  type\n  strikePrice\n  contractType\n  expiryDate\n  chequeNumber\n  provisionalCreditAmount\n  primaryBlocker\n  interestRate\n  frequency\n  counterAssetSymbol\n  rewardProgram\n  counterPartyCurrency\n  counterPartyCurrencyAmount\n  counterPartyName\n  fxRate\n  fees\n  reference\n  __typename\n}"
+        })
+        
+        print(payload)
+        
+        response = self.TradeAPI.makeRequest("POST", useGraph=True , endpoint="", jsonData=payload)
+        print(response)
+        return response
+
+
+    
+    
